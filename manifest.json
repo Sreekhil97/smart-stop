@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Smart Stop \u2014 Destination Alarm",
+  "short_name": "Smart Stop",
+  "description": "A destination proximity demo for bus and Metro journeys.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#071522",
+  "theme_color": "#0b1f33",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

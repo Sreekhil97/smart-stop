@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1f33">
+  <meta name="description" content="Smart Stop helps you keep an eye on your destination while travelling in Dubai.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>Smart Stop — Destination Alarm</title>
+  <style>
+    :root{color-scheme:dark;--bg:#071522;--panel:#10263a;--panel2:#17334b;--text:#f3f7fb;--muted:#a9bbca;--green:#67e8b2;--blue:#83c9ff;--danger:#ffcc78}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#0b2033,var(--bg) 55%);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+    main{max-width:620px;margin:auto;padding:24px 18px 42px}.top{display:flex;align-items:center;gap:12px;margin-bottom:26px}.logo{width:48px;height:48px;border-radius:16px;background:var(--green);display:grid;place-items:center;color:#072033;font-size:25px;font-weight:900}.eyebrow{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--green);font-weight:800}.top h1{margin:2px 0 0;font-size:25px}
+    .hero{padding:22px;border-radius:25px;background:linear-gradient(135deg,#173b55,#10263a);border:1px solid #2b4a60;margin-bottom:16px}.hero h2{font-size:27px;line-height:1.12;margin:7px 0 10px}.hero p{margin:0;color:var(--muted)}.tag{display:inline-block;background:#254b5b;color:var(--green);border-radius:99px;padding:5px 10px;font-size:12px;font-weight:700}
+    .card{background:var(--panel);border:1px solid #254055;border-radius:20px;padding:18px;margin:14px 0}.label{display:block;color:var(--muted);font-size:13px;font-weight:700;margin-bottom:8px}select,input{width:100%;background:#071a29;color:var(--text);border:1px solid #355267;border-radius:12px;padding:14px;font:inherit;outline:none}select:focus,input:focus{border-color:var(--green)}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btn{width:100%;border:0;border-radius:14px;padding:15px 18px;font:inherit;font-weight:800;cursor:pointer;margin-top:12px;background:var(--green);color:#062033}.btn.secondary{background:#23435a;color:var(--text);border:1px solid #3b5a70}.btn:disabled{opacity:.45;cursor:not-allowed}.status{padding:14px;border-radius:14px;background:#081a28;color:var(--muted);font-size:14px;margin-top:12px}.status strong{color:var(--text)}.distance{font-size:34px;font-weight:850;letter-spacing:-.04em}.small{font-size:12px;color:var(--muted)}.stops{display:grid;gap:8px}.stop{background:#0b1e2d;padding:12px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:10px}.stop small{display:block;color:var(--muted)}.foot{color:#91a7b8;font-size:12px;text-align:center;margin-top:24px}.alarm{display:none;position:fixed;inset:0;background:#06131ff2;z-index:4;align-items:center;justify-content:center;padding:22px}.alarm.show{display:flex}.alarmbox{text-align:center;max-width:400px;background:#15354a;border:1px solid #5be2ad;border-radius:28px;padding:28px}.alarmbox .bell{font-size:54px}.alarmbox h2{font-size:30px;margin:10px 0}.alarmbox p{color:#c6d6e2}
+    @media(max-width:420px){main{padding:18px 14px 30px}.hero h2{font-size:24px}.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <header class="top"><div class="logo">S</div><div><div class="eyebrow">Your travel companion</div><h1>Smart Stop</h1></div></header>
+  <section class="hero"><span class="tag">DUBAI • EARLY TEST VERSION</span><h2>Relax. We’ll help you watch for your stop.</h2><p>Choose a destination and start location monitoring while this page stays open.</p></section>
+  <section class="card">
+    <label class="label" for="destination">Where do you want to get off?</label>
+    <select id="destination">
+      <option value="">Choose a sample stop…</option>
+      <option value="Naif Intersection">Naif Intersection (Bus)</option>
+      <option value="BurJuman Metro Station">BurJuman Metro Station</option>
+      <option value="Union Metro Station">Union Metro Station</option>
+      <option value="Satwa Bus Station">Satwa Bus Station</option>
+      <option value="Mall of the Emirates Metro Station">Mall of the Emirates Metro Station</option>
+    </select>
+    <div class="row" style="margin-top:14px">
+      <div><label class="label" for="threshold">Alert before stop</label><select id="threshold"><option value="2000">2 km</option><option value="1000" selected>1 km</option><option value="500">500 m</option></select></div>
+      <div><label class="label" for="mode">Travel mode</label><select id="mode"><option>Bus</option><option>Metro</option><option>Either</option></select></div>
+    </div>
+    <button class="btn" id="start">Start location demo</button>
+    <button class="btn secondary" id="stop" disabled>Stop monitoring</button>
+    <div class="status" id="status" role="status">Choose a destination, then allow location access. This demo does not have official live RTA routes.</div>
+  </section>
+  <section class="card">
+    <div class="label">Monitoring status</div>
+    <div class="distance" id="distance">—</div>
+    <div class="small" id="distanceCaption">Distance to destination will appear here</div>
+    <div class="status"><strong>Important:</strong> This version checks GPS only while the app is open and active. It is not a guaranteed alarm when your phone is locked or the app is closed.</div>
+  </section>
+  <section class="card">
+    <div class="label">Sample Dubai destinations</div>
+    <div class="stops">
+      <div class="stop"><span>Naif Intersection<small>Bus stop • sample entry</small></span><span>🚌</span></div>
+      <div class="stop"><span>BurJuman<small>Metro • sample entry</small></span><span>🚇</span></div>
+      <div class="stop"><span>Union<small>Metro • sample entry</small></span><span>🚇</span></div>
+    </div>
+    <p class="small">Destination names are examples only. Exact coordinates, route matching, RTA data access, and production-grade alerts have not been configured.</p>
+  </section>
+  <div class="foot">Smart Stop MVP • Built for testing, not for safety-critical navigation.</div>
+</main>
+<div class="alarm" id="alarm" role="alertdialog" aria-modal="true" aria-labelledby="alarmTitle">
+  <div class="alarmbox"><div class="bell">🔔</div><h2 id="alarmTitle">Approaching your stop</h2><p id="alarmText">You’re getting close to your destination.</p><button class="btn" id="dismiss">I’m awake</button></div>
+</div>
+<script>
+const destination=document.querySelector('#destination'), threshold=document.querySelector('#threshold');
+const startBtn=document.querySelector('#start'), stopBtn=document.querySelector('#stop');
+const statusEl=document.querySelector('#status'), distanceEl=document.querySelector('#distance'), caption=document.querySelector('#distanceCaption');
+const alarm=document.querySelector('#alarm'), alarmText=document.querySelector('#alarmText');
+let watchId=null, alerted=false;
+const demoStops={
+ 'Naif Intersection':{lat:25.2708,lon:55.3095},
+ 'BurJuman Metro Station':{lat:25.2540,lon:55.3047},
+ 'Union Metro Station':{lat:25.2670,lon:55.3137},
+ 'Satwa Bus Station':{lat:25.2289,lon:55.2788},
+ 'Mall of the Emirates Metro Station':{lat:25.1181,lon:55.2006}
+};
+function metres(a,b,c,d){const R=6371000,p=Math.PI/180,dp=(c-a)*p,dl=(d-b)*p;const x=Math.sin(dp/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
+function setStatus(s){statusEl.textContent=s}
+function ring(){try{if('vibrate' in navigator)navigator.vibrate([500,200,500,200,800])}catch(e){};try{const ctx=new (window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=880;gain.gain.value=.15;osc.start();setTimeout(()=>{osc.stop();ctx.close()},900)}catch(e){}}
+function onPosition(pos){
+ const stop=demoStops[destination.value]; if(!stop)return;
+ const d=metres(pos.coords.latitude,pos.coords.longitude,stop.lat,stop.lon);
+ distanceEl.textContent=d>=1000?(d/1000).toFixed(2)+' km':Math.round(d)+' m';
+ caption.textContent='Approximate straight-line distance • GPS accuracy ±'+Math.round(pos.coords.accuracy)+' m';
+ setStatus('Location monitoring is active. Keep Smart Stop open for this demo.');
+ if(d<=Number(threshold.value)&&!alerted){alerted=true;alarmText.textContent='You are approximately '+(d>=1000?(d/1000).toFixed(2)+' km':Math.round(d)+' m')+' from '+destination.value+'.';alarm.classList.add('show');ring()}
+}
+startBtn.addEventListener('click',()=>{
+ if(!destination.value){setStatus('Please choose a destination first.');return}
+ if(!navigator.geolocation){setStatus('Location is not supported by this browser.');return}
+ if(watchId!==null)navigator.geolocation.clearWatch(watchId);
+ alerted=false;distanceEl.textContent='Locating…';
+ setStatus('Requesting location permission…');
+ watchId=navigator.geolocation.watchPosition(onPosition,e=>{setStatus('Could not read location: '+e.message+'. Check location permission and try again.')},{enableHighAccuracy:true,maximumAge:3000,timeout:15000});
+ startBtn.disabled=true;stopBtn.disabled=false;
+});
+stopBtn.addEventListener('click',()=>{if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;startBtn.disabled=false;stopBtn.disabled=true;setStatus('Monitoring stopped.');distanceEl.textContent='—';caption.textContent='Distance to destination will appear here'});
+document.querySelector('#dismiss').addEventListener('click',()=>{alarm.classList.remove('show')});
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body>
+</html>
