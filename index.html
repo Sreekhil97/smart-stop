@@ -31,6 +31,20 @@
       <option value="Satwa Bus Station">Satwa Bus Station</option>
       <option value="Mall of the Emirates Metro Station">Mall of the Emirates Metro Station</option>
     </select>
+    
+<div style="margin-top:14px">
+  <label class="label" for="rtaRouteSelect">Browse Dubai RTA routes</label>
+  <select id="rtaRouteSelect">
+    <option value="">Choose a route…</option>
+  </select>
+
+  <label class="label" for="rtaStopSelect" style="margin-top:12px">Bus stops on this route</label>
+  <select id="rtaStopSelect" disabled>
+    <option value="">Choose a route first…</option>
+  </select>
+
+  <p class="small">Imported stop data only. GPS alerts require verified stop coordinates.</p>
+</div>
     <div class="row" style="margin-top:14px">
       <div><label class="label" for="threshold">Alert before stop</label><select id="threshold"><option value="2000">2 km</option><option value="1000" selected>1 km</option><option value="500">500 m</option></select></div>
       <div><label class="label" for="mode">Travel mode</label><select id="mode"><option>Bus</option><option>Metro</option><option>Either</option></select></div>
@@ -96,21 +110,88 @@ stopBtn.addEventListener('click',()=>{if(watchId!==null)navigator.geolocation.cl
 document.querySelector('#dismiss').addEventListener('click',()=>{alarm.classList.remove('show')});
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
   
-const ROUTE_DATA_URL = "https://raw.githubusercontent.com/Sreekhil97/smart-stop/refs/heads/main/bus_routes.json";
+const ROUTE_DATA_URL =
+  "https://raw.githubusercontent.com/Sreekhil97/smart-stop/main/bus_routes.json";
+
+const rtaRouteSelect = document.querySelector("#rtaRouteSelect");
+const rtaStopSelect = document.querySelector("#rtaStopSelect");
+
+function updateRtaStops(routes) {
+  const selectedRoute = rtaRouteSelect.value;
+
+  rtaStopSelect.innerHTML =
+    '<option value="">Choose a bus stop…</option>';
+
+  const stops = routes
+    .filter(r =>
+      r.route_name === selectedRoute &&
+      typeof r.stop_name === "string" &&
+      r.stop_name.trim() !== ""
+    )
+    .sort((a, b) => a.stop_number - b.stop_number);
+
+  const seen = new Set();
+
+  stops.forEach(stop => {
+    const key = stop.stop_name.trim() + "|" + stop.stop_number;
+    if (seen.has(key)) return;
+    seen.add(key);
+
+    const option = document.createElement("option");
+    option.value = stop.stop_name.trim();
+    option.textContent =
+      stop.stop_name.trim() + " — Stop " + stop.stop_number;
+
+    rtaStopSelect.appendChild(option);
+  });
+
+  rtaStopSelect.disabled = stops.length === 0;
+
+  if (stops.length === 0) {
+    rtaStopSelect.innerHTML =
+      '<option value="">No named stops available</option>';
+  }
+}
+
+rtaRouteSelect.addEventListener("change", () => {
+  updateRtaStops(window.smartStopRoutes || []);
+});
 
 fetch(ROUTE_DATA_URL)
   .then(response => {
-    if (!response.ok) throw new Error("Could not load route data");
+    if (!response.ok) {
+      throw new Error("Could not load route data");
+    }
     return response.json();
   })
   .then(routes => {
-    console.log("Smart Stop loaded route records:", routes.length);
-    setStatus("Route data loaded: " + routes.length + " records. Stop names and locations still need verification.");
+    window.smartStopRoutes = routes;
+
+    const routeNames = [...new Set(
+      routes
+        .filter(r => r.route_name && r.stop_name)
+        .map(r => r.route_name)
+    )].sort((a, b) => a.localeCompare(b, undefined, {
+      numeric: true
+    }));
+
+    routeNames.forEach(name => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      rtaRouteSelect.appendChild(option);
+    });
+
+    setStatus(
+      "Route data loaded: " + routes.length +
+      " records. Choose a route to browse its named stops."
+    );
   })
   .catch(error => {
     console.error("Route data error:", error);
-    setStatus("Could not load route data. Please check your internet connection.");
+    setStatus("Could not load route data. Please refresh and try again.");
   });
+
 </script>
 </body>
 </html>
