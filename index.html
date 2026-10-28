@@ -95,6 +95,22 @@ startBtn.addEventListener('click',()=>{
 stopBtn.addEventListener('click',()=>{if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;startBtn.disabled=false;stopBtn.disabled=true;setStatus('Monitoring stopped.');distanceEl.textContent='—';caption.textContent='Distance to destination will appear here'});
 document.querySelector('#dismiss').addEventListener('click',()=>{alarm.classList.remove('show')});
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  
+const ROUTE_DATA_URL = "https://raw.githubusercontent.com/Sreekhil97/smart-stop/refs/heads/main/bus_routes.json";
+
+fetch(ROUTE_DATA_URL)
+  .then(response => {
+    if (!response.ok) throw new Error("Could not load route data");
+    return response.json();
+  })
+  .then(routes => {
+    console.log("Smart Stop loaded route records:", routes.length);
+    setStatus("Route data loaded: " + routes.length + " records. Stop names and locations still need verification.");
+  })
+  .catch(error => {
+    console.error("Route data error:", error);
+    setStatus("Could not load route data. Please check your internet connection.");
+  });
 </script>
 </body>
 </html>
