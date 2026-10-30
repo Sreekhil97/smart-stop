@@ -79,6 +79,7 @@ const startBtn=document.querySelector('#start'), stopBtn=document.querySelector(
 const statusEl=document.querySelector('#status'), distanceEl=document.querySelector('#distance'), caption=document.querySelector('#distanceCaption');
 const alarm=document.querySelector('#alarm'), alarmText=document.querySelector('#alarmText');
 let watchId=null, alerted=false;
+let selectedRtaStop = null;
 const demoStops={
  'Naif Intersection':{lat:25.2708,lon:55.3095},
  'BurJuman Metro Station':{lat:25.2540,lon:55.3047},
