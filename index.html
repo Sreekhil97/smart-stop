@@ -125,22 +125,19 @@ function updateRtaStops(routes) {
   const stops = routes
     .filter(r =>
       r.route_name === selectedRoute &&
-      typeof r.stop_name === "string" &&
-      r.stop_name.trim() !== ""
+      r.stop_name &&
+      Number.isFinite(Number(r.latitude)) &&
+      Number.isFinite(Number(r.longitude))
     )
-    .sort((a, b) => a.stop_number - b.stop_number);
-
-  const seen = new Set();
+    .sort((a, b) =>
+      a.stop_name.localeCompare(b.stop_name)
+    );
 
   stops.forEach(stop => {
-    const key = stop.stop_name.trim() + "|" + stop.stop_number;
-    if (seen.has(key)) return;
-    seen.add(key);
-
     const option = document.createElement("option");
-    option.value = stop.stop_name.trim();
+    option.value = stop.stop_id;
     option.textContent =
-      stop.stop_name.trim() + " — Stop " + stop.stop_number;
+      stop.stop_name + " — ID " + stop.stop_id;
 
     rtaStopSelect.appendChild(option);
   });
