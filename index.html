@@ -136,7 +136,10 @@ function onPosition(pos) {
   }
 }
 startBtn.addEventListener('click',()=>{
- if(!destination.value){setStatus('Please choose a destination first.');return}
+ if(!destination.value && !selectedRtaStop){
+   setStatus('Please choose a sample destination or an RTA bus stop first.');
+   return;
+ }
  if(!navigator.geolocation){setStatus('Location is not supported by this browser.');return}
  if(watchId!==null)navigator.geolocation.clearWatch(watchId);
  alerted=false;distanceEl.textContent='Locating…';
