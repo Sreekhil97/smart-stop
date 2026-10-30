@@ -53,41 +53,84 @@
   <div class="alarmbox"><div class="bell">🔔</div><h2 id="alarmTitle">Approaching your stop</h2><p id="alarmText">You’re getting close to your destination.</p><button class="btn" id="dismiss">I’m awake</button></div>
 </div>
 <script>
-const destination=document.querySelector('#destination'), threshold=document.querySelector('#threshold');
-const startBtn=document.querySelector('#start'), stopBtn=document.querySelector('#stop');
-const statusEl=document.querySelector('#status'), distanceEl=document.querySelector('#distance'), caption=document.querySelector('#distanceCaption');
-const alarm=document.querySelector('#alarm'), alarmText=document.querySelector('#alarmText');
-let watchId=null, alerted=false;
+
+const threshold = document.querySelector('#threshold');
+const startBtn = document.querySelector('#start');
+const stopBtn = document.querySelector('#stop');
+const statusEl = document.querySelector('#status');
+const distanceEl = document.querySelector('#distance');
+const caption = document.querySelector('#distanceCaption');
+const alarm = document.querySelector('#alarm');
+const alarmText = document.querySelector('#alarmText');
+
+let watchId = null;
+let alerted = false;
 let selectedRtaStop = null;
-const demoStops={
- 'Naif Intersection':{lat:25.2708,lon:55.3095},
- 'BurJuman Metro Station':{lat:25.2540,lon:55.3047},
- 'Union Metro Station':{lat:25.2670,lon:55.3137},
- 'Satwa Bus Station':{lat:25.2289,lon:55.2788},
- 'Mall of the Emirates Metro Station':{lat:25.1181,lon:55.2006}
-};
-function metres(a,b,c,d){const R=6371000,p=Math.PI/180,dp=(c-a)*p,dl=(d-b)*p;const x=Math.sin(dp/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
-function setStatus(s){statusEl.textContent=s}
-function ring(){try{if('vibrate' in navigator)navigator.vibrate([500,200,500,200,800])}catch(e){};try{const ctx=new (window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=880;gain.gain.value=.15;osc.start();setTimeout(()=>{osc.stop();ctx.close()},900)}catch(e){}}
+
+const ROUTE_DATA_URL =
+  "https://raw.githubusercontent.com/Sreekhil97/smart-stop/main/smart_stop_rta_bus_stops_latest.json";
+
+const rtaRouteSelect = document.querySelector("#rtaRouteSelect");
+const rtaStopSelect = document.querySelector("#rtaStopSelect");
+
+function metres(a, b, c, d) {
+  const R = 6371000;
+  const p = Math.PI / 180;
+  const dp = (c - a) * p;
+  const dl = (d - b) * p;
+  const x =
+    Math.sin(dp / 2) ** 2 +
+    Math.cos(a * p) * Math.cos(c * p) *
+    Math.sin(dl / 2) ** 2;
+
+  return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+function setStatus(message) {
+  statusEl.textContent = message;
+}
+
+function ring() {
+  try {
+    if ('vibrate' in navigator) {
+      navigator.vibrate([500, 200, 500, 200, 800]);
+    }
+  } catch (e) {}
+
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.value = 0.15;
+    osc.start();
+
+    setTimeout(() => {
+      osc.stop();
+      ctx.close();
+    }, 900);
+  } catch (e) {}
+}
+
 function onPosition(pos) {
-  const stop = selectedRtaStop
-    ? {
-        lat: Number(selectedRtaStop.latitude),
-        lon: Number(selectedRtaStop.longitude)
-      }
-    : demoStops[destination.value];
+  if (!selectedRtaStop) return;
 
-  if (!stop) return;
+  const lat = Number(selectedRtaStop.latitude);
+  const lon = Number(selectedRtaStop.longitude);
 
-  const stopName = selectedRtaStop
-    ? selectedRtaStop.stop_name
-    : destination.value;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    setStatus("Selected stop has invalid coordinates.");
+    return;
+  }
 
   const d = metres(
     pos.coords.latitude,
     pos.coords.longitude,
-    stop.lat,
-    stop.lon
+    lat,
+    lon
   );
 
   distanceEl.textContent =
@@ -103,40 +146,20 @@ function onPosition(pos) {
 
   if (d <= Number(threshold.value) && !alerted) {
     alerted = true;
+
     alarmText.textContent =
       'You are approximately ' +
-      (d >= 1000
-        ? (d / 1000).toFixed(2) + ' km'
-        : Math.round(d) + ' m') +
-      ' from ' + stopName + '.';
+      Math.round(d) + ' metres from ' +
+      selectedRtaStop.stop_name + '.';
 
     alarm.classList.add('show');
     ring();
   }
 }
-startBtn.addEventListener('click',()=>{
- if(!destination.value && !selectedRtaStop){
-   setStatus('Please choose a sample destination or an RTA bus stop first.');
-   return;
- }
- if(!navigator.geolocation){setStatus('Location is not supported by this browser.');return}
- if(watchId!==null)navigator.geolocation.clearWatch(watchId);
- alerted=false;distanceEl.textContent='Locating…';
- setStatus('Requesting location permission…');
- watchId=navigator.geolocation.watchPosition(onPosition,e=>{setStatus('Could not read location: '+e.message+'. Check location permission and try again.')},{enableHighAccuracy:true,maximumAge:3000,timeout:15000});
- startBtn.disabled=true;stopBtn.disabled=false;
-});
-stopBtn.addEventListener('click',()=>{if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=null;startBtn.disabled=false;stopBtn.disabled=true;setStatus('Monitoring stopped.');distanceEl.textContent='—';caption.textContent='Distance to destination will appear here'});
-document.querySelector('#dismiss').addEventListener('click',()=>{alarm.classList.remove('show')});
-if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  
-const ROUTE_DATA_URL =
-  "https://raw.githubusercontent.com/Sreekhil97/smart-stop/main/smart_stop_rta_bus_stops_latest.json";
-
-const rtaRouteSelect = document.querySelector("#rtaRouteSelect");
-const rtaStopSelect = document.querySelector("#rtaStopSelect");
 
 function updateRtaStops(routes) {
+  selectedRtaStop = null;
+
   const selectedRoute = rtaRouteSelect.value;
 
   rtaStopSelect.innerHTML =
@@ -168,11 +191,18 @@ function updateRtaStops(routes) {
     rtaStopSelect.innerHTML =
       '<option value="">No named stops available</option>';
   }
+
+  setStatus(
+    stops.length
+      ? "Choose your destination bus stop."
+      : "No stops with coordinates found for this route."
+  );
 }
 
 rtaRouteSelect.addEventListener("change", () => {
   updateRtaStops(window.smartStopRoutes || []);
 });
+
 rtaStopSelect.addEventListener("change", () => {
   const selectedId = rtaStopSelect.value;
 
@@ -181,10 +211,69 @@ rtaStopSelect.addEventListener("change", () => {
   ) || null;
 
   if (selectedRtaStop) {
-    destination.value = "";
-    setStatus("Selected RTA stop: " + selectedRtaStop.stop_name);
+    setStatus("Selected destination: " + selectedRtaStop.stop_name);
   }
 });
+
+startBtn.addEventListener('click', () => {
+  if (!selectedRtaStop) {
+    setStatus("Please select an RTA route and destination stop first.");
+    return;
+  }
+
+  if (!navigator.geolocation) {
+    setStatus("Location is not supported by this browser.");
+    return;
+  }
+
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+
+  alerted = false;
+  distanceEl.textContent = 'Locating…';
+  setStatus('Requesting location permission…');
+
+  watchId = navigator.geolocation.watchPosition(
+    onPosition,
+    e => {
+      setStatus('Could not read location: ' + e.message);
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      watchId = null;
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 3000,
+      timeout: 15000
+    }
+  );
+
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+});
+
+stopBtn.addEventListener('click', () => {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+
+  watchId = null;
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+  setStatus('Monitoring stopped.');
+  distanceEl.textContent = '—';
+  caption.textContent = 'Distance to destination will appear here';
+});
+
+document.querySelector('#dismiss').addEventListener('click', () => {
+  alarm.classList.remove('show');
+});
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
 fetch(ROUTE_DATA_URL)
   .then(response => {
     if (!response.ok) {
@@ -199,9 +288,9 @@ fetch(ROUTE_DATA_URL)
       routes
         .filter(r => r.route_name && r.stop_name)
         .map(r => r.route_name)
-    )].sort((a, b) => a.localeCompare(b, undefined, {
-      numeric: true
-    }));
+    )].sort((a, b) =>
+      a.localeCompare(b, undefined, { numeric: true })
+    );
 
     routeNames.forEach(name => {
       const option = document.createElement("option");
@@ -211,14 +300,15 @@ fetch(ROUTE_DATA_URL)
     });
 
     setStatus(
-      "Route data loaded: " + routes.length +
-      " records. Choose a route to browse its named stops."
+      "RTA data loaded: " + routes.length +
+      " records. Choose your route."
     );
   })
   .catch(error => {
     console.error("Route data error:", error);
-    setStatus("Could not load route data. Please refresh and try again.");
+    setStatus("Could not load RTA data. Please refresh and try again.");
   });
+
 
 </script>
 </body>
