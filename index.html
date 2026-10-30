@@ -154,7 +154,18 @@ function updateRtaStops(routes) {
 rtaRouteSelect.addEventListener("change", () => {
   updateRtaStops(window.smartStopRoutes || []);
 });
+rtaStopSelect.addEventListener("change", () => {
+  const selectedId = rtaStopSelect.value;
 
+  selectedRtaStop = window.smartStopRoutes?.find(
+    stop => String(stop.stop_id) === selectedId
+  ) || null;
+
+  if (selectedRtaStop) {
+    destination.value = "";
+    setStatus("Selected RTA stop: " + selectedRtaStop.stop_name);
+  }
+});
 fetch(ROUTE_DATA_URL)
   .then(response => {
     if (!response.ok) {
