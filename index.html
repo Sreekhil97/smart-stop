@@ -90,13 +90,50 @@ const demoStops={
 function metres(a,b,c,d){const R=6371000,p=Math.PI/180,dp=(c-a)*p,dl=(d-b)*p;const x=Math.sin(dp/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
 function setStatus(s){statusEl.textContent=s}
 function ring(){try{if('vibrate' in navigator)navigator.vibrate([500,200,500,200,800])}catch(e){};try{const ctx=new (window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=880;gain.gain.value=.15;osc.start();setTimeout(()=>{osc.stop();ctx.close()},900)}catch(e){}}
-function onPosition(pos){
- const stop=demoStops[destination.value]; if(!stop)return;
- const d=metres(pos.coords.latitude,pos.coords.longitude,stop.lat,stop.lon);
- distanceEl.textContent=d>=1000?(d/1000).toFixed(2)+' km':Math.round(d)+' m';
- caption.textContent='Approximate straight-line distance • GPS accuracy ±'+Math.round(pos.coords.accuracy)+' m';
- setStatus('Location monitoring is active. Keep Smart Stop open for this demo.');
- if(d<=Number(threshold.value)&&!alerted){alerted=true;alarmText.textContent='You are approximately '+(d>=1000?(d/1000).toFixed(2)+' km':Math.round(d)+' m')+' from '+destination.value+'.';alarm.classList.add('show');ring()}
+function onPosition(pos) {
+  const stop = selectedRtaStop
+    ? {
+        lat: Number(selectedRtaStop.latitude),
+        lon: Number(selectedRtaStop.longitude)
+      }
+    : demoStops[destination.value];
+
+  if (!stop) return;
+
+  const stopName = selectedRtaStop
+    ? selectedRtaStop.stop_name
+    : destination.value;
+
+  const d = metres(
+    pos.coords.latitude,
+    pos.coords.longitude,
+    stop.lat,
+    stop.lon
+  );
+
+  distanceEl.textContent =
+    d >= 1000
+      ? (d / 1000).toFixed(2) + ' km'
+      : Math.round(d) + ' m';
+
+  caption.textContent =
+    'Approximate straight-line distance • GPS accuracy ±' +
+    Math.round(pos.coords.accuracy) + ' m';
+
+  setStatus('Location monitoring is active. Keep Smart Stop open.');
+
+  if (d <= Number(threshold.value) && !alerted) {
+    alerted = true;
+    alarmText.textContent =
+      'You are approximately ' +
+      (d >= 1000
+        ? (d / 1000).toFixed(2) + ' km'
+        : Math.round(d) + ' m') +
+      ' from ' + stopName + '.';
+
+    alarm.classList.add('show');
+    ring();
+  }
 }
 startBtn.addEventListener('click',()=>{
  if(!destination.value){setStatus('Please choose a destination first.');return}
