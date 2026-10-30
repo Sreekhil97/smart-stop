@@ -206,8 +206,10 @@ rtaRouteSelect.addEventListener("change", () => {
 });
 
 rtaStopSelect.addEventListener("change", () => {
-  const selectedId = rtaStopSelect.value;
+  alerted = false;
+  alarm.classList.remove("show");
 
+  const selectedId = rtaStopSelect.value;
   selectedRtaStop = window.smartStopRoutes?.find(
     stop => String(stop.stop_id) === selectedId
   ) || null;
