@@ -18,6 +18,42 @@
     @media(max-width:420px){main{padding:18px 14px 30px}.hero h2{font-size:24px}.row{grid-template-columns:1fr}}
   </style>
 </head>
+  <style>
+  #smartStopWelcome {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #071522;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #smartStopWelcome img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  #smartStopWelcome button {
+    position: absolute;
+    bottom: 35px;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 30px;
+    background: #20d6a0;
+    color: #071522;
+    font-size: 16px;
+    font-weight: bold;
+  }
+</style>
+
+<div id="smartStopWelcome">
+  <img src="launch-screen.png" alt="Smart Stop welcome screen">
+  <button onclick="document.getElementById('smartStopWelcome').remove()">
+    Start using Smart Stop
+  </button>
+</div>
 <body>
 <main>
   <header class="top"><div class="logo">
