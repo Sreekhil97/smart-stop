@@ -200,6 +200,8 @@ function updateRtaStops(routes) {
 }
 
 rtaRouteSelect.addEventListener("change", () => {
+  selectedRtaStop = null;
+  rtaStopSelect.value = "";
   updateRtaStops(window.smartStopRoutes || []);
 });
 
