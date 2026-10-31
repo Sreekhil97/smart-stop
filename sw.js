@@ -1,5 +1,5 @@
 
-const CACHE = 'smart-stop-v2';
+const CACHE = 'smart-stop-v3';
 
 const FILES = [
   './',
@@ -37,7 +37,6 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(request.url);
 
-  // Only handle requests from Smart Stop itself.
   if (url.origin !== self.location.origin) return;
 
   event.respondWith(
@@ -61,9 +60,46 @@ self.addEventListener('fetch', event => {
         }
 
         return new Response('Offline', {
-          status: 503,
-          statusText: 'Service Unavailable'
+          status: 503
         });
       })
+  );
+});
+
+// Display notifications sent to this service worker.
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SMART_STOP_ALERT') {
+    event.waitUntil(
+      self.registration.showNotification(
+        'Smart Stop 🔔',
+        {
+          body: event.data.message,
+          icon: './icon-192.png',
+          badge: './icon-192.png',
+          tag: 'smart-stop-alert',
+          requireInteraction: true
+        }
+      )
+    );
+  }
+});
+
+// Open Smart Stop when notification is tapped.
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+
+  event.waitUntil(
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    }).then(windowClients => {
+      for (const client of windowClients) {
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+
+      return clients.openWindow('./');
+    })
   );
 });
