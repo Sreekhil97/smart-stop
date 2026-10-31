@@ -212,7 +212,7 @@ if (ctx.state === 'suspended') {
       osc.start(now);
       osc.stop(now + 2.6);
 
-      osc.onended = () => ctx.close();
+      osc.onended = () => {};
     });
   } catch (e) {
     console.log('Sound alert unavailable:', e);
