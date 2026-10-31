@@ -112,7 +112,26 @@ const alarmText = document.querySelector('#alarmText');
 let watchId = null;
 let alerted = false;
 let selectedRtaStop = null;
+let alertAudioContext = null;
 
+function unlockAlertAudio() {
+  try {
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContextClass) return;
+
+    if (!alertAudioContext) {
+      alertAudioContext = new AudioContextClass();
+    }
+
+    if (alertAudioContext.state === 'suspended') {
+      alertAudioContext.resume();
+    }
+  } catch (e) {
+    console.log('Audio unlock failed:', e);
+  }
+}
 const ROUTE_DATA_URL =
   "https://raw.githubusercontent.com/Sreekhil97/smart-stop/main/smart_stop_rta_bus_stops_latest.json";
 
