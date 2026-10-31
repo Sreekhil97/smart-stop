@@ -202,15 +202,14 @@ function onPosition(pos) {
 ring();
 
 navigator.serviceWorker.ready.then(registration => {
-  registration.showNotification('Smart Stop 🔔', {
-    body: 'You are approximately ' +
-      Math.round(d) + ' metres from ' +
-      selectedRtaStop.stop_name + '.',
-    icon: './icon-192.png',
-    badge: './icon-192.png',
-    tag: 'smart-stop-alert',
-    requireInteraction: true
-  });
+  if (registration.active) {
+    registration.active.postMessage({
+      type: 'SMART_STOP_ALERT',
+      message: 'You are approximately ' +
+        Math.round(d) + ' metres from ' +
+        selectedRtaStop.stop_name + '.'
+    });
+  }
 });
   }
 }
