@@ -1,5 +1,5 @@
 
-const CACHE = 'smart-stop-v3';
+const CACHE = 'smart-stop-v4';
 
 const FILES = [
   './',
@@ -30,6 +30,7 @@ self.addEventListener('activate', event => {
   );
 });
 
+// Network-first loading with offline fallback.
 self.addEventListener('fetch', event => {
   const request = event.request;
 
@@ -59,34 +60,61 @@ self.addEventListener('fetch', event => {
           return caches.match('./index.html');
         }
 
-        return new Response('Offline', {
-          status: 503
-        });
+        return new Response('Offline', { status: 503 });
       })
   );
 });
 
-// Display notifications sent to this service worker.
+// Existing in-app notification support.
 self.addEventListener('message', event => {
   if (event.data?.type === 'SMART_STOP_ALERT') {
     event.waitUntil(
-      self.registration.showNotification(
-        'Smart Stop 🔔',
-        {
-          body: event.data.message,
-          icon: './icon-192.png',
-          badge: './icon-192.png',
-          tag: 'smart-stop-alert',
-          requireInteraction: true
-        }
-      )
+      self.registration.showNotification('Smart Stop 🔔', {
+        body: event.data.message,
+        icon: './icon-192.png',
+        badge: './icon-192.png',
+        tag: 'smart-stop-alert',
+        requireInteraction: true
+      })
     );
   }
 });
 
-// Open Smart Stop when notification is tapped.
+// NEW: Receive remote push notifications.
+self.addEventListener('push', event => {
+  let data = {};
+
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {
+      body: event.data ? event.data.text() : ''
+    };
+  }
+
+  const title = data.title || 'Smart Stop 🔔';
+
+  const options = {
+    body: data.body || 'Your destination is approaching.',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    tag: 'smart-stop-push-alert',
+    requireInteraction: true,
+    data: {
+      url: './'
+    }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+// Open Smart Stop when a notification is tapped.
 self.addEventListener('notificationclick', event => {
   event.notification.close();
+
+  const target = new URL('./', self.location.href).href;
 
   event.waitUntil(
     clients.matchAll({
@@ -99,7 +127,7 @@ self.addEventListener('notificationclick', event => {
         }
       }
 
-      return clients.openWindow('./');
+      return clients.openWindow(target);
     })
   );
 });
