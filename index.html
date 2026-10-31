@@ -492,9 +492,14 @@ document.querySelector('#dismiss').addEventListener('click', () => {
 });
 
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  navigator.serviceWorker.register('./sw.js', {
+    updateViaCache: 'none'
+  }).then(registration => {
+    registration.update();
+  }).catch(error => {
+    console.error('Service worker error:', error);
+  });
 }
-
 fetch(ROUTE_DATA_URL)
   .then(response => {
     if (!response.ok) {
