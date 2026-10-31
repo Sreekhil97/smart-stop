@@ -357,6 +357,7 @@ async function requestNotificationPermission() {
   return true;
 }
 startBtn.addEventListener('click', async () => {
+   unlockAlertAudio(); 
   const notificationEnabled = await requestNotificationPermission();
 
   if (!notificationEnabled) return;
