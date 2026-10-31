@@ -136,30 +136,66 @@ function setStatus(message) {
   statusEl.textContent = message;
 }
 
+
 function ring() {
+  // Vibration pattern (where supported)
   try {
     if ('vibrate' in navigator) {
-      navigator.vibrate([500, 200, 500, 200, 800]);
+      navigator.vibrate([400, 150, 400, 150, 400, 200, 900]);
     }
   } catch (e) {}
 
+  // Four-part sound alert
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = 880;
-    gain.gain.value = 0.15;
-    osc.start();
+    if (!AudioContextClass) return;
 
-    setTimeout(() => {
-      osc.stop();
-      ctx.close();
-    }, 900);
-  } catch (e) {}
+    const ctx = new AudioContextClass();
+
+    ctx.resume().then(() => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+
+      const now = ctx.currentTime;
+
+      gain.gain.setValueAtTime(0, now);
+
+      [0, 0.55, 1.1, 1.8].forEach((offset, index) => {
+        const duration = index === 3 ? 0.65 : 0.3;
+
+        gain.gain.setValueAtTime(0, now + offset);
+        gain.gain.linearRampToValueAtTime(
+          0.25,
+          now + offset + 0.04
+        );
+        gain.gain.setValueAtTime(
+          0.25,
+          now + offset + duration - 0.04
+        );
+        gain.gain.linearRampToValueAtTime(
+          0,
+          now + offset + duration
+        );
+      });
+
+      osc.start(now);
+      osc.stop(now + 2.6);
+
+      osc.onended = () => ctx.close();
+    });
+  } catch (e) {
+    console.log('Sound alert unavailable:', e);
+  }
 }
+
 
 function onPosition(pos) {
   if (!selectedRtaStop) return;
