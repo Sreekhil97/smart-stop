@@ -264,8 +264,32 @@ rtaStopSelect.addEventListener("change", () => {
     setStatus("Selected destination: " + selectedRtaStop.stop_name);
   }
 });
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) {
+    setStatus('Notifications are not supported.');
+    return false;
+  }
 
-startBtn.addEventListener('click', () => {
+  if (!('serviceWorker' in navigator)) {
+    setStatus('Service Worker is not supported.');
+    return false;
+  }
+
+  const permission = await Notification.requestPermission();
+
+  if (permission !== 'granted') {
+    setStatus('Please allow notifications for Smart Stop.');
+    return false;
+  }
+
+  setStatus('Smart Stop notifications enabled successfully!');
+
+  return true;
+}
+startBtn.addEventListener('click', async () => {
+  const notificationEnabled = await requestNotificationPermission();
+
+  if (!notificationEnabled) return;
   if (!selectedRtaStop) {
     setStatus("Please select an RTA route and destination stop first.");
     return;
