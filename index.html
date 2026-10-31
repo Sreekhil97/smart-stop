@@ -171,7 +171,11 @@ function ring() {
 
     if (!AudioContextClass) return;
 
-    const ctx = new AudioContextClass();
+    const ctx = alertAudioContext || new AudioContextClass();
+
+if (ctx.state === 'suspended') {
+  ctx.resume();
+}
 
     ctx.resume().then(() => {
       const osc = ctx.createOscillator();
