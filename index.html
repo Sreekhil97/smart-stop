@@ -566,8 +566,13 @@ window.smartStopRailStations.forEach(station => {
 railStopSelect.disabled = window.smartStopRailStations.length === 0;
   })
   .catch(error => {
-    console.error("Rail data error:", error);
-  });
+  console.error("Rail data error:", error);
+  railStopSelect.innerHTML = "";
+  const option = document.createElement("option");
+  option.textContent = "Could not load stations: " + error.message;
+  railStopSelect.appendChild(option);
+  railStopSelect.disabled = true;
+});
 
 </script>
 </body>
