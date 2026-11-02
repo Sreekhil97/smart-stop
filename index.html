@@ -552,10 +552,18 @@ fetch(RAIL_DATA_URL)
   })
   .then(data => {
     window.smartStopRailStations = data.stations || [];
-    console.log(
-      "Metro and Tram stations loaded:",
-      window.smartStopRailStations.length
-    );
+    railStopSelect.innerHTML =
+  '<option value="">Choose a Metro or Tram station…</option>';
+
+window.smartStopRailStations.forEach(station => {
+  const option = document.createElement("option");
+  option.value = station.id;
+  option.textContent =
+    station.name + " — " + station.type + " (" + station.line + ")";
+  railStopSelect.appendChild(option);
+});
+
+railStopSelect.disabled = window.smartStopRailStations.length === 0;
   })
   .catch(error => {
     console.error("Rail data error:", error);
