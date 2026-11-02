@@ -184,7 +184,22 @@ modeSelect.addEventListener("change", () => {
   rtaRouteSelect.value = "";
   rtaStopSelect.value = "";
   railStopSelect.value = "";
+  railStopSelect.innerHTML =
+  '<option value="">Choose a ' + mode + ' station…</option>';
 
+const matchingStations =
+  (window.smartStopRailStations || []).filter(
+    station => station.type === mode.toLowerCase()
+  );
+
+matchingStations.forEach(station => {
+  const option = document.createElement("option");
+  option.value = station.id;
+  option.textContent = station.name + " — " + station.line;
+  railStopSelect.appendChild(option);
+});
+
+railStopSelect.disabled = matchingStations.length === 0;
   selectedRtaStop = null;
 
   setStatus(
