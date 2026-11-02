@@ -534,7 +534,27 @@ fetch(ROUTE_DATA_URL)
     console.error("Route data error:", error);
     setStatus("Could not load RTA data. Please refresh and try again.");
   });
+// Load Metro and Tram station names
+const RAIL_DATA_URL =
+  "https://raw.githubusercontent.com/Sreekhil97/smart-stop/main/Smart_Stop_Rail_Stops.json";
 
+fetch(RAIL_DATA_URL)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("Could not load Metro and Tram data");
+    }
+    return response.json();
+  })
+  .then(data => {
+    window.smartStopRailStations = data.stations || [];
+    console.log(
+      "Metro and Tram stations loaded:",
+      window.smartStopRailStations.length
+    );
+  })
+  .catch(error => {
+    console.error("Rail data error:", error);
+  });
 
 </script>
 </body>
