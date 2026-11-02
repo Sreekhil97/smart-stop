@@ -501,10 +501,22 @@ enableNotificationsBtn.addEventListener("click", async () => {
   const notificationEnabled = await requestNotificationPermission();
 
   if (!notificationEnabled) return;
-  if (!selectedRtaStop) {
-    setStatus("Please select an RTA route and destination stop first.");
-    return;
-  }
+  const mode = modeSelect.value;
+
+if (mode === "Bus" && !selectedRtaStop) {
+  setStatus("Please select a bus route and destination stop.");
+  return;
+}
+
+if (mode !== "Bus" && !railStopSelect.value) {
+  setStatus("Please select your " + mode + " station.");
+  return;
+}
+
+if (mode !== "Bus") {
+  setStatus("Rail station selected. GPS monitoring is not enabled for rail yet.");
+  return;
+}
 
   if (!navigator.geolocation) {
     setStatus("Location is not supported by this browser.");
