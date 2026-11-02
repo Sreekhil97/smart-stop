@@ -170,7 +170,30 @@ const ROUTE_DATA_URL =
 const rtaRouteSelect = document.querySelector("#rtaRouteSelect");
 const rtaStopSelect = document.querySelector("#rtaStopSelect");
 const railStopSelect = document.querySelector("#railStopSelect");
-function metres(a, b, c, d) {
+const busFields = document.querySelector("#busFields");
+const railFields = document.querySelector("#railFields");
+
+const modeSelect = document.querySelector("#mode");
+
+modeSelect.addEventListener("change", () => {
+  const mode = modeSelect.value;
+
+  busFields.style.display = mode === "Bus" ? "block" : "none";
+  railFields.style.display = mode === "Bus" ? "none" : "block";
+
+  rtaRouteSelect.value = "";
+  rtaStopSelect.value = "";
+  railStopSelect.value = "";
+
+  selectedRtaStop = null;
+
+  setStatus(
+    mode === "Bus"
+      ? "Choose your bus route and destination stop."
+      : "Choose your " + mode + " station."
+  );
+});
+  function metres(a, b, c, d) {
   const R = 6371000;
   const p = Math.PI / 180;
   const dp = (c - a) * p;
