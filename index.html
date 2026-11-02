@@ -73,21 +73,30 @@
   <option value="Metro">Metro</option>
   <option value="Tram">Tram</option>
 </select>
-<label class="label" for="rtaRouteSelect">Select your RTA bus route</label>
-<select id="rtaRouteSelect">
-  <option value="">Choose a route…</option>
-</select>
+<div id="busFields">
+  <label class="label" for="rtaRouteSelect">
+    Select your RTA bus route
+  </label>
+  <select id="rtaRouteSelect">
+    <option value="">Choose a route…</option>
+  </select>
 
-<label class="label" for="rtaStopSelect" style="margin-top:12px">Select your destination bus stop</label>
-<select id="rtaStopSelect" disabled>
-  <option value="">Choose a route first…</option>
-</select>
+  <label class="label" for="rtaStopSelect" style="margin-top:12px">
+    Select your destination bus stop
+  </label>
+  <select id="rtaStopSelect" disabled>
+    <option value="">Choose a route first…</option>
+  </select>
+</div>
+
+<div id="railFields" style="display:none">
   <label class="label" for="railStopSelect" style="margin-top:12px">
-  Select your Metro or Tram station
-</label>
-<select id="railStopSelect" disabled>
-  <option value="">Loading Metro and Tram stations…</option>
-</select>  
+    Select your Metro or Tram station
+  </label>
+  <select id="railStopSelect" disabled>
+    <option value="">Loading Metro and Tram stations…</option>
+  </select>
+</div>
     <div style="margin-top:14px">
   <label class="label" for="threshold">Alert before stop</label>
   <select id="threshold">
