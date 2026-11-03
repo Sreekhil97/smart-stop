@@ -330,14 +330,44 @@ function onPosition(pos) {
     alarm.classList.add('show');
 ring();
 
-navigator.serviceWorker.ready.then(registration => {
-  if (registration.active) {
-    registration.active.postMessage({
-      type: 'SMART_STOP_ALERT',
-      message: 'You are approximately ' +
-        Math.round(d) + ' metres from ' +
-        selectedRtaStop.stop_name + '.'
+navigator.serviceWorker.ready.then(async registration => {
+  try {
+    const subscription =
+      await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      pushStatus.textContent =
+        "Please enable background notifications first.";
+      return;
+    }
+
+    const message =
+      "You are approximately " +
+      Math.round(d) + " metres from " +
+      selectedRtaStop.stop_name + ".";
+
+    const response = await fetch(PUSH_SERVER + "/notify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        subscription: subscription.toJSON(),
+        title: "Smart Stop 🔔",
+        body: message
+      })
     });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || result.message || "Push failed");
+    }
+
+    pushStatus.textContent = "Destination notification sent!";
+  } catch (error) {
+    console.error("Destination push error:", error);
+    pushStatus.textContent = "Push error: " + error.message;
   }
 });
   }
