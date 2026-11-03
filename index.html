@@ -529,6 +529,53 @@ enableNotificationsBtn.addEventListener("click", async () => {
     enableNotificationsBtn.disabled = false;
   }
 });
+  const testNotificationBtn =
+  document.querySelector("#testNotification");
+
+testNotificationBtn.addEventListener("click", async () => {
+  testNotificationBtn.disabled = true;
+  pushStatus.textContent = "Sending test notification...";
+
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription =
+      await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      throw new Error("Enable background notifications first.");
+    }
+
+    const response = await fetch(PUSH_SERVER + "/notify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        subscription: subscription.toJSON(),
+        title: "Smart Stop Test",
+        body: "Your background push notification is working."
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.message || result.error || "Push failed"
+      );
+    }
+
+    pushStatus.textContent =
+      "Test notification sent. Check your iPhone notifications.";
+
+  } catch (error) {
+    console.error("Test notification error:", error);
+    pushStatus.textContent =
+      "Test failed: " + error.message;
+  } finally {
+    testNotificationBtn.disabled = false;
+  }
+});
 
   startBtn.addEventListener('click', async () => {
    unlockAlertAudio(); 
